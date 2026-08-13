@@ -1,0 +1,29 @@
+[Unit]
+Description=Loom Agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+# Edit these three lines for your setup.
+User=pi
+WorkingDirectory=/home/pi/loom/agent
+ExecStart=/home/pi/loom/agent/venv/bin/python /home/pi/loom/agent/loom_agent.py
+
+Restart=always
+RestartSec=5
+
+# The agent's whole job is running commands you queue, so it is deliberately
+# NOT sandboxed the way the coordinator is -- filesystem or capability
+# restrictions here would break the jobs you are trying to run. Control risk by
+# choosing which user it runs as instead: give it an account with exactly the
+# access your jobs need, and never run it as root.
+NoNewPrivileges=true
+
+# SIGTERM lets the agent finish reporting in-flight job results before exit.
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

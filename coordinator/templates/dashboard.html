@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Loom</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-csrf="{{ csrf }}">
+  <header>
+    <h1>Loom</h1>
+    <div class="header-right">
+      <span id="conn" class="conn">connecting…</span>
+      <a class="logout" href="{{ url_for('logout') }}">Sign out</a>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Nodes</h2>
+      <div id="nodes" class="node-grid"></div>
+    </section>
+
+    <section>
+      <h2>Submit a job</h2>
+      <form id="job-form">
+        <input type="text" id="job-command" placeholder="Command to run, e.g. ./scripts/cve-sweep.sh" required>
+        <select id="job-target">
+          <option value="">Any node (falls back to persistent)</option>
+        </select>
+        <button type="submit">Queue job</button>
+      </form>
+      <p id="job-error" class="error" hidden></p>
+    </section>
+
+    <section>
+      <h2>Recent jobs</h2>
+      <table id="jobs-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Command</th><th>Status</th><th>Node</th>
+            <th>Created</th><th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+
+  <div id="log-modal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="log-title">Job</h3>
+        <button id="log-close" class="ghost">Close</button>
+      </div>
+      <pre id="log-body"></pre>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

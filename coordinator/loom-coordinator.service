@@ -1,0 +1,36 @@
+[Unit]
+Description=Loom Coordinator
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/loom/coordinator
+
+# --workers 1 is deliberate, not a Pi concession. The stale-job reaper thread
+# and the login throttle both live in process memory, so a second worker would
+# run a second reaper and give an attacker a fresh set of login attempts per
+# worker. Concurrency comes from --threads instead, which is the right shape
+# for this workload anyway: every request is a short SQLite read or write.
+ExecStart=/home/pi/loom/coordinator/venv/bin/gunicorn \
+    --workers 1 \
+    --threads 8 \
+    --bind 127.0.0.1:5055 \
+    --access-logfile - \
+    --error-logfile - \
+    app:app
+
+Restart=on-failure
+RestartSec=5
+
+# Hardening: the coordinator only ever needs to read its own directory and
+# write loom.db. It executes nothing, unlike the agent.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/home/pi/loom/coordinator
+
+[Install]
+WantedBy=multi-user.target

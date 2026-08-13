@@ -1,0 +1,22 @@
+# Copy this file to config.yaml and fill in real values.
+# config.yaml is gitignored — never commit it.
+
+server:
+  host: "127.0.0.1"   # bind loopback only; the reverse proxy / tunnel reaches it.
+                      # Use 0.0.0.0 only if you want direct LAN access.
+  port: 5055
+  debug: false        # never true on a tunnelled coordinator — it exposes a
+                      # remote code execution console to anyone who can reach it
+
+dashboard:
+  # Generate both of these with: python ../scripts/gen_api_key.py --dashboard-secret
+  # secret_key signs the session cookie; password_hash gates the /login page.
+  secret_key: "REPLACE_ME_WITH_RANDOM_HEX"
+  password_hash: "REPLACE_ME_WITH_WERKZEUG_HASH"
+
+  # Set to true once you are serving over HTTPS (a Cloudflare Tunnel counts).
+  # It stops the session cookie from ever being sent over plain HTTP.
+  secure_cookie: false
+
+  # How long a dashboard login stays valid.
+  session_days: 7

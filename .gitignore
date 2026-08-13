@@ -1,0 +1,28 @@
+# Real config with secrets — never commit
+coordinator/config.yaml
+agent/config.yaml
+
+# Database (device names, API keys, job history)
+coordinator/loom.db
+coordinator/*.db
+coordinator/*.db-wal
+coordinator/*.db-shm
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+
+# Logs
+*.log
+agent/logs/
+coordinator/logs/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# Env files if you add any
+.env

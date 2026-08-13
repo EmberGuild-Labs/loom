@@ -1,0 +1,36 @@
+# Copy this file to config.yaml and fill in real values.
+# config.yaml is gitignored — never commit it (it holds this node's API key).
+
+coordinator_url: "https://mesh.example.com"   # your coordinator, over HTTPS
+api_key: "REPLACE_ME"                          # from: gen_api_key.py --add-device
+device_name: "my-desktop"                      # must match the registered --name
+
+job_timeout: 3600           # kill a job that runs longer than this (seconds)
+max_concurrent_jobs: 2      # stop polling for new work while this many are running
+# job_working_dir: "/Users/me/work"   # cwd for jobs; defaults to the agent folder
+
+# ---------------------------------------------------------------------------
+# Optional: run a command when files under a directory change.
+#   {path}  is replaced with the changed file's path
+#   mode    local (default) runs it on this node right now
+#           queue submits it to the coordinator so any matching node can take it
+#   debounce  seconds to coalesce repeated events for the same file (default 1.0)
+# ---------------------------------------------------------------------------
+# watch:
+#   - path: "~/render-queue"
+#     run: "python ~/loom/scripts/handle-render.py {path}"
+#     recursive: false
+#     mode: local
+#     debounce: 2.0
+#
+#   - path: "~/inbox"
+#     run: "python ~/loom/scripts/transcode.py {path}"
+#     mode: queue
+#     target_tag: gpu      # let the GPU box do the heavy lifting
+
+# ---------------------------------------------------------------------------
+# Optional: cron-style daily jobs, in this node's local time.
+# ---------------------------------------------------------------------------
+# cron:
+#   - at: "02:00"
+#     run: "bash ~/loom/scripts/nightly-backup.sh"
