@@ -5,6 +5,25 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+
+# ---------------------------------------------------------------------------
+# EDIT THESE FOR YOUR LAYOUT. Two common ones:
+#
+#   A. Standalone (what docs/PI_SETUP.md walks through)
+#        User=pi
+#        WorkingDirectory=/home/pi/loom/coordinator
+#        ReadWritePaths=/home/pi/loom/coordinator
+#
+#   B. Behind a deploy tool that clones into /var/www and chowns to www-data
+#        User=www-data
+#        WorkingDirectory=/var/www/<hostname>/coordinator
+#        ReadWritePaths=/var/www/<hostname>/coordinator
+#        ProtectHome=true          (nothing under /home is needed at all)
+#
+# Whichever you pick, WorkingDirectory, ExecStart and ReadWritePaths must all
+# agree -- a mismatch is the single most common reason this unit fails to start,
+# because gunicorn cannot import app:app or cannot create loom.db.
+# ---------------------------------------------------------------------------
 User=pi
 WorkingDirectory=/home/pi/loom/coordinator
 
