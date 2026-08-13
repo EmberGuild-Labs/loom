@@ -14,6 +14,11 @@ ExecStart=/home/pi/loom/agent/venv/bin/python /home/pi/loom/agent/loom_agent.py
 Restart=always
 RestartSec=5
 
+# Without this, Python block-buffers stdout/stderr into the journal and the
+# agent's logs lag by minutes -- which makes a broken agent look exactly like a
+# healthy quiet one, since the agent only logs when something goes wrong.
+Environment=PYTHONUNBUFFERED=1
+
 # The agent's whole job is running commands you queue, so it is deliberately
 # NOT sandboxed the way the coordinator is -- filesystem or capability
 # restrictions here would break the jobs you are trying to run. Control risk by

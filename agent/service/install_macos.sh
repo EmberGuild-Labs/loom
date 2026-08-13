@@ -54,14 +54,24 @@ cat > "$PLIST" <<PLIST_EOF
   <key>Label</key>
   <string>${LABEL}</string>
 
+  <!-- -u is not optional here. Python block-buffers stdout/stderr when they are
+       files rather than a TTY, so without it the log stays empty for ages and a
+       failing agent looks identical to a healthy silent one. -->
   <key>ProgramArguments</key>
   <array>
     <string>${PYTHON}</string>
+    <string>-u</string>
     <string>${AGENT_DIR}/loom_agent.py</string>
   </array>
 
   <key>WorkingDirectory</key>
   <string>${AGENT_DIR}</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PYTHONUNBUFFERED</key>
+    <string>1</string>
+  </dict>
 
   <key>RunAtLoad</key>
   <true/>
