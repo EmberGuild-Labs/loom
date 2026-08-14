@@ -8,6 +8,13 @@ server:
   debug: false        # never true on a tunnelled coordinator — it exposes a
                       # remote code execution console to anyone who can reach it
 
+  # How many reverse proxies sit in front of this app. Must be right, or the
+  # per-IP login throttle collapses into one shared bucket and every client
+  # locks out every other. Check with /whoami after changing your proxy chain.
+  #   1 = nginx alone, or a tunnel alone
+  #   2 = Cloudflare Tunnel -> nginx  (the docs/PI_SETUP.md setup)
+  proxy_hops: 2
+
 dashboard:
   # Generate both of these with: python ../scripts/gen_api_key.py --dashboard-secret
   # secret_key signs the session cookie; password_hash gates the /login page.

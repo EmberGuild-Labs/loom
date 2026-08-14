@@ -111,11 +111,24 @@ CONFIG = load_config()
 app = Flask(__name__)
 app.secret_key = CONFIG["dashboard"]["secret_key"]
 
-# Loom is designed to sit behind a Cloudflare Tunnel / nginx reverse proxy, and
-# may be mounted under a path prefix. Without this, url_for() generates http://
-# links and request.remote_addr is always 127.0.0.1, which would make the login
-# throttle below lock out every client at once.
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+# Loom is designed to sit behind a reverse proxy, and may be mounted under a
+# path prefix. Without this, url_for() generates http:// links.
+#
+# proxy_hops must match how many proxies actually sit in front of this app,
+# because ProxyFix reads the Nth-from-last X-Forwarded-For entry. Get it wrong
+# and every request appears to come from the nearest proxy instead of the real
+# client -- which silently turns the per-IP login throttle below into a single
+# global bucket, so one device's failed logins lock out every other device.
+#
+#   1 = one proxy (nginx alone, or a tunnel alone)
+#   2 = Cloudflare Tunnel -> nginx  (the docs/PI_SETUP.md setup, and the
+#       default here, since nginx appends via $proxy_add_x_forwarded_for)
+#
+# Verify with the /whoami endpoint after any change to your proxy chain.
+PROXY_HOPS = int(CONFIG.get("server", {}).get("proxy_hops", 2))
+app.wsgi_app = ProxyFix(
+    app.wsgi_app, x_for=PROXY_HOPS, x_proto=1, x_host=1, x_prefix=1
+)
 
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
@@ -333,6 +346,24 @@ def healthz():
     except Exception:
         return jsonify({"ok": False}), 503
     return jsonify({"ok": True, "agent_api_version": AGENT_API_VERSION})
+
+
+@app.route("/whoami")
+@require_admin
+def whoami():
+    """What the coordinator thinks your IP is, for checking proxy_hops.
+
+    If `remote_addr` comes back as 127.0.0.1 or your proxy's address rather
+    than your actual client IP, proxy_hops is wrong and the login throttle is
+    lumping every client into one bucket.
+    """
+    return jsonify({
+        "remote_addr": request.remote_addr,
+        "proxy_hops": PROXY_HOPS,
+        "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+        "cf_connecting_ip": request.headers.get("CF-Connecting-IP"),
+        "looks_correct": request.remote_addr not in ("127.0.0.1", "::1"),
+    })
 
 
 def _device_row_to_dict(r):
