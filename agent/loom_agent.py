@@ -164,7 +164,16 @@ def collect_stats():
         # real heartbeat is already meaningful.
         "cpu_percent": psutil.cpu_percent(interval=None),
         "ram_percent": vm.percent,
-        "ram_used_gb": round(vm.used / (1024 ** 3), 2),
+        # Deliberately (total - available), not psutil's vm.used.
+        #
+        # psutil derives .percent from (total - available)/total, but computes
+        # .used differently per platform -- on macOS it is active + wired,
+        # which excludes inactive, compressed and cached pages. Reporting both
+        # verbatim made the dashboard show "70% RAM" next to "6.3/16.0 GB",
+        # which is 39%. Both were right by their own definition and the pair
+        # was nonsense. Deriving used from available keeps the bar and the
+        # numbers consistent on every platform.
+        "ram_used_gb": round((vm.total - vm.available) / (1024 ** 3), 2),
         "ram_total_gb": round(vm.total / (1024 ** 3), 2),
         "disk_percent": disk_percent,
         "uptime_seconds": int(time.time() - psutil.boot_time()),
